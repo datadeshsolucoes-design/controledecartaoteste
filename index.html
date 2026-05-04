@@ -22,6 +22,7 @@
             --danger: #ef4444;
             --warning: #f59e0b;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --view-btn-bg: #6c5ce7;
         }
         body.dark {
             --bg: #0f172a;
@@ -30,6 +31,7 @@
             --text-light: #94a3b8;
             --border: #334155;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            --view-btn-bg: #8b7cf6;
         }
         * {
             margin: 0;
@@ -279,6 +281,28 @@
             color: var(--text);
             font-size: 0.9rem;
         }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-group .mini-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 4px;
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
         .btn-sm {
             padding: 8px 16px;
             border: none;
@@ -296,10 +320,17 @@
             background: var(--border);
             color: var(--text);
         }
+        .tabs-and-view {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
         .tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 24px;
             flex-wrap: wrap;
         }
         .tab {
@@ -319,25 +350,29 @@
         }
         .view-toggle {
             display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            justify-content: center;
+            gap: 4px;
+            background: var(--border);
+            padding: 4px;
+            border-radius: 10px;
         }
         .view-btn {
-            padding: 12px 24px;
-            border: 2px solid var(--border);
-            border-radius: 50px;
-            background: var(--card);
-            color: var(--text);
-            font-weight: 600;
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 1.2rem;
             cursor: pointer;
-            font-size: 0.9rem;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .view-btn.active {
-            background: #4a6cf7;
+            background: var(--view-btn-bg);
             color: white;
-            border-color: #4a6cf7;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
         }
         .admin-section {
             margin-bottom: 24px;
@@ -439,6 +474,33 @@
             background: linear-gradient(90deg, #4a6cf7, #10b981);
             border-radius: 10px;
             transition: width 0.5s ease;
+        }
+        .checkbox-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--bg);
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        .checkbox-item:hover {
+            background: var(--card);
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4a6cf7;
+            cursor: pointer;
         }
         .table-container {
             overflow-x: auto;
@@ -601,6 +663,18 @@
             background: #e0e7ff;
             color: #3730a3;
         }
+        .badge-selecionados {
+            background: #4a6cf7;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: none;
+        }
+        .badge-selecionados.show {
+            display: inline-block;
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -621,6 +695,13 @@
                 font-size: 0.75rem;
                 min-width: 32px;
             }
+            .tabs-and-view {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .view-toggle {
+                align-self: flex-end;
+            }
         }
     </style>
 </head>
@@ -635,7 +716,7 @@
     <div id="loginScreen" class="login-screen">
         <div class="login-card">
             <h1>💳 Controle Cartão</h1>
-            <p>Sistema Enterprise - v3.1</p>
+            <p>Sistema Enterprise - v3.2</p>
             <div class="input-group">
                 <label>Nome Completo</label>
                 <input type="text" id="loginNome" placeholder="Seu nome" autocomplete="off">
@@ -724,18 +805,18 @@
                     <button class="btn btn-success" id="btnCriarDivida" style="width:auto;">✅ CRIAR DÍVIDA</button>
                 </div>
                 <div id="panel-pay" class="form-panel">
-                    <h3 style="margin-bottom:20px;">💰 Registrar Pagamento</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Dívida</label><select id="payDividaSelect"></select></div>
-                        <div class="form-group"><label>Data</label><input type="date" id="payData"></div>
-                    </div>
-                    <div class="form-row">
+                    <h3 style="margin-bottom:20px;">💰 Registrar Pagamento (Múltiplo)</h3>
+                    <p style="color:var(--text-light);margin-bottom:15px;">Selecione uma ou mais dívidas para pagar:</p>
+                    <div class="checkbox-list" id="payCheckboxList"></div>
+                    <span class="badge-selecionados" id="payCountBadge">0 selecionadas</span>
+                    <div class="form-row" style="margin-top:15px;">
+                        <div class="form-group"><label>Data do Pagamento</label><input type="date" id="payData"></div>
                         <div class="form-group"><label>Senha Admin</label><input type="password" id="paySenha" placeholder="Senha"></div>
                     </div>
-                    <button class="btn btn-primary" id="btnPagar" style="width:auto;">✅ CONFIRMAR</button>
+                    <button class="btn btn-primary" id="btnPagar" style="width:auto;">✅ PAGAR SELECIONADAS</button>
                 </div>
                 <div id="panel-edit" class="form-panel">
-                    <h3 style="margin-bottom:20px;">✏️ Editar/Excluir</h3>
+                    <h3 style="margin-bottom:20px;">✏️ Editar Dívida</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Dívida</label><select id="editDividaSelect"></select></div>
                         <div class="form-group"><label>Novo Valor</label><input type="number" id="editNovoValor" step="0.01"></div>
@@ -745,7 +826,15 @@
                         <div class="form-group"><label>Senha Admin</label><input type="password" id="editSenha" placeholder="Senha"></div>
                     </div>
                     <button class="btn btn-primary" id="btnSalvarEdicao" style="width:auto;">💾 SALVAR</button>
-                    <button class="btn btn-danger" id="btnExcluirDivida" style="width:auto;">🗑️ EXCLUIR</button>
+                    <hr style="margin:25px 0;border-color:var(--border);">
+                    <h3 style="margin-bottom:20px;">🗑️ Excluir Dívidas (Múltiplo)</h3>
+                    <p style="color:var(--text-light);margin-bottom:15px;">Selecione uma ou mais dívidas para excluir:</p>
+                    <div class="checkbox-list" id="deleteCheckboxList"></div>
+                    <span class="badge-selecionados" id="deleteCountBadge">0 selecionadas</span>
+                    <div class="form-row" style="margin-top:15px;">
+                        <div class="form-group"><label>Senha Admin</label><input type="password" id="deleteSenha" placeholder="Senha"></div>
+                    </div>
+                    <button class="btn btn-danger" id="btnExcluirDividas" style="width:auto;">🗑️ EXCLUIR SELECIONADAS</button>
                 </div>
                 <div id="panel-tools" class="form-panel">
                     <h3 style="margin-bottom:20px;">🛠️ Ferramentas</h3>
@@ -760,13 +849,18 @@
 
             <!-- Filtros -->
             <div class="controls">
-                <span>📅</span><input type="month" id="filtroMes">
-                <span>📌</span>
-                <select id="filtroTipoMes">
-                    <option value="inicio">Início</option>
-                    <option value="vencimento" selected>Vencimento</option>
-                    <option value="ativas">Ativas</option>
-                </select>
+                <div class="filter-group">
+                    <span class="mini-label">📌 Status da Dívida:</span>
+                    <select id="filtroTipoMes">
+                        <option value="inicio">Início da Dívida</option>
+                        <option value="vencimento" selected>Vencimento da Dívida</option>
+                        <option value="ativas">Dívidas Ativas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="mini-label">📅 Mês/Ano:</span>
+                    <input type="month" id="filtroMes">
+                </div>
                 <span>🔍</span><input type="text" id="filtroNome" placeholder="Nome...">
                 <input type="text" id="filtroCPF" placeholder="CPF..." maxlength="11">
                 <button class="btn-sm btn-primary-sm" id="btnFiltrar">🔍 Filtrar</button>
@@ -774,19 +868,19 @@
                 <span style="margin-left:auto;color:var(--text-light);font-size:0.8rem;" id="registroCount"></span>
             </div>
 
-            <!-- Abas -->
-            <div class="tabs">
-                <button class="tab active" data-tab="A">💳 Cartão A</button>
-                <button class="tab" data-tab="B">💳 Cartão B</button>
-                <button class="tab" data-tab="all">📋 Todos</button>
-                <button class="tab" data-tab="quitadas">✅ Quitadas</button>
-                <button class="tab" data-tab="grafico">📈 Gráfico</button>
-            </div>
-
-            <!-- Alternar Cards/Tabela -->
-            <div class="view-toggle" id="viewToggle">
-                <button class="view-btn active" data-view="cards">🃏 Cards</button>
-                <button class="view-btn" data-view="tabela">📋 Tabela</button>
+            <!-- Abas + Alternar Cards/Tabela -->
+            <div class="tabs-and-view">
+                <div class="tabs">
+                    <button class="tab active" data-tab="A">💳 Cartão A</button>
+                    <button class="tab" data-tab="B">💳 Cartão B</button>
+                    <button class="tab" data-tab="all">📋 Todos</button>
+                    <button class="tab" data-tab="quitadas">✅ Quitadas</button>
+                    <button class="tab" data-tab="grafico">📈 Gráfico</button>
+                </div>
+                <div class="view-toggle" id="viewToggle">
+                    <button class="view-btn active" data-view="cards" title="Cards">🃏</button>
+                    <button class="view-btn" data-view="tabela" title="Tabela">📋</button>
+                </div>
             </div>
 
             <!-- Gráfico -->
@@ -847,17 +941,17 @@
         // ============================================
         const ADMIN_CPF = '12345678909';
         const SENHA_PADRAO = '123456';
-        const ITENS_POR_PAGINA = 6; // 6 cards por página, ou 50 por tabela
+        const ITENS_POR_PAGINA = 6;
 
         let usuarioLogado = null;
         let isAdmin = false;
         let tabAtual = 'A';
         let paginaAtual = 1;
         let totalPaginas = 1;
-        let viewAtual = 'cards'; // 'cards' ou 'tabela'
+        let viewAtual = 'cards';
         let chartInstance = null;
         let dadosCache = [];
-        let todosDados = []; // Cache completo sem paginação
+        let todosDados = [];
 
         // ============================================
         // FUNÇÕES BÁSICAS
@@ -936,8 +1030,7 @@
                 if (nomeFiltro) query = query.ilike('nome', `%${nomeFiltro}%`);
                 if (cpfFiltro) query = query.eq('cpf', cpfFiltro);
 
-                // Buscar todos sem paginação primeiro para filtrar por mês
-                const { data, error, count } = await query;
+                const { data, error } = await query;
                 if (error) throw error;
 
                 let dados = data || [];
@@ -947,29 +1040,24 @@
                     const [anoRef, mesRef] = mesFiltro.split('-').map(Number);
 
                     dados = dados.filter(d => {
-                        const dataInicio = d.data_inicio ? new Date(d.data_inicio.split('T')[0]) : null;
+                        const dataInicio = d.data_inicio ? new Date(d.data_inicio.split('T')[0]) :
+                            null;
 
                         if (tipoMesFiltro === 'inicio') {
-                            // Dívidas que COMEÇARAM no mês
                             if (!dataInicio) return false;
                             return dataInicio.getFullYear() === anoRef && (dataInicio.getMonth() +
                                 1) === mesRef;
                         } else if (tipoMesFiltro === 'vencimento') {
-                            // Dívidas com VENCIMENTO no mês (parcela atual)
                             if (!dataInicio || d.parcela_atual > d.total_parcelas) return false;
                             const venc = calcularVencimento(d.data_inicio, d.parcela_atual, d.cartao);
                             if (!venc || venc === '—') return false;
                             const [diaV, mesV, anoV] = venc.split('/').map(Number);
                             return anoV === anoRef && mesV === mesRef;
                         } else if (tipoMesFiltro === 'ativas') {
-                            // Dívidas ATIVAS no mês (começou antes ou durante, e não quitou antes)
                             if (!dataInicio) return false;
-                            const inicioMesRef = new Date(anoRef, mesRef - 1, 1);
                             const fimMesRef = new Date(anoRef, mesRef, 0);
 
-                            // Se já estava quitada antes do mês de referência
                             if (d.parcela_atual > d.total_parcelas) {
-                                // Verifica se quitou DENTRO do mês de referência
                                 const pagamentos = typeof d.pagamentos === 'string' ? JSON.parse(d
                                     .pagamentos) : (d.pagamentos || []);
                                 const ultimoPag = pagamentos[pagamentos.length - 1];
@@ -980,9 +1068,7 @@
                                 return false;
                             }
 
-                            // Dívida ativa: começou antes ou no mês de referência
                             if (dataInicio <= fimMesRef) return true;
-
                             return false;
                         }
                         return true;
@@ -1058,12 +1144,14 @@
                 if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
                 dadosCache = getPaginaDados(todosDados);
 
-                atualizarStats(todosDados); // Stats usa todos os dados
+                atualizarStats(todosDados);
                 renderizarConteudo(dadosCache);
                 renderizarPaginacao();
-                if (isAdmin) atualizarSelectsAdmin(todosDados);
+                if (isAdmin) {
+                    atualizarSelectsAdmin(todosDados);
+                    atualizarCheckboxLists(todosDados);
+                }
 
-                // Esconder o toggle de visualização na aba de gráfico
                 document.getElementById('viewToggle').classList.toggle('hidden', tabAtual === 'grafico');
 
                 hideLoading();
@@ -1103,6 +1191,8 @@
                 setTimeout(() => renderizarGrafico(todosDados), 100);
                 return;
             }
+
+            document.getElementById('viewToggle').classList.remove('hidden');
 
             if (dados.length === 0) {
                 cardsContainer.innerHTML =
@@ -1181,16 +1271,12 @@
             container.classList.remove('hidden');
 
             let html = '';
-
-            // Botão Anterior
             html +=
                 `<button onclick="mudarPagina(${paginaAtual - 1})" ${paginaAtual === 1 ? 'disabled' : ''}>⬅️ Anterior</button>`;
 
-            // Calcular range de páginas visíveis
             let inicioPag = Math.max(1, paginaAtual - 2);
             let fimPag = Math.min(totalPaginas, paginaAtual + 2);
 
-            // Ajustar para sempre mostrar 5 botões (quando possível)
             if (fimPag - inicioPag < 4) {
                 if (inicioPag === 1) {
                     fimPag = Math.min(totalPaginas, inicioPag + 4);
@@ -1199,25 +1285,21 @@
                 }
             }
 
-            // Primeira página + reticências
             if (inicioPag > 1) {
                 html += `<button onclick="mudarPagina(1)">1</button>`;
                 if (inicioPag > 2) html += `<button disabled>…</button>`;
             }
 
-            // Páginas numeradas
             for (let i = inicioPag; i <= fimPag; i++) {
                 html +=
                     `<button onclick="mudarPagina(${i})" class="${i === paginaAtual ? 'active' : ''}">${i}</button>`;
             }
 
-            // Última página + reticências
             if (fimPag < totalPaginas) {
                 if (fimPag < totalPaginas - 1) html += `<button disabled>…</button>`;
                 html += `<button onclick="mudarPagina(${totalPaginas})">${totalPaginas}</button>`;
             }
 
-            // Botão Próximo
             html +=
                 `<button onclick="mudarPagina(${paginaAtual + 1})" ${paginaAtual === totalPaginas ? 'disabled' : ''}>Próximo ➡️</button>`;
 
@@ -1230,7 +1312,6 @@
             dadosCache = getPaginaDados(todosDados);
             renderizarConteudo(dadosCache);
             renderizarPaginacao();
-            // Scroll suave para o topo
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1288,17 +1369,12 @@
         }
 
         function atualizarSelectsAdmin(dados) {
-            const paySelect = document.getElementById('payDividaSelect');
             const editSelect = document.getElementById('editDividaSelect');
-            if (!paySelect || !editSelect) return;
+            if (!editSelect) return;
 
-            const ativas = dados.filter(d => d.parcela_atual <= d.total_parcelas);
-            paySelect.innerHTML = ativas.map(d =>
-                `<option value="${d.id}">${d.nome} - ${d.parcela_atual}/${d.total_parcelas} (Cartão ${d.cartao})</option>`
-                ).join('');
             editSelect.innerHTML = dados.map(d =>
                 `<option value="${d.id}">${d.nome} - ${d.parcela_atual}/${d.total_parcelas} (Cartão ${d.cartao}) ${d.parcela_atual > d.total_parcelas ? '[QUITADO]' : ''}</option>`
-                ).join('');
+            ).join('');
 
             editSelect.onchange = () => {
                 const d = dados.find(div => div.id == editSelect.value);
@@ -1307,6 +1383,53 @@
                     document.getElementById('editNovoTotal').value = d.total_parcelas;
                 }
             };
+        }
+
+        function atualizarCheckboxLists(dados) {
+            // Pagamento múltiplo
+            const payList = document.getElementById('payCheckboxList');
+            const ativas = dados.filter(d => d.parcela_atual <= d.total_parcelas);
+            if (payList) {
+                payList.innerHTML = ativas.map(d => `
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="${d.id}" class="pay-checkbox" onchange="atualizarContadorSelecionados()">
+                        <span>${d.nome} - ${d.parcela_atual}/${d.total_parcelas} (Cartão ${d.cartao}) - R$ ${d.valor_parcela.toFixed(2)}</span>
+                    </label>
+                `).join('');
+            }
+
+            // Exclusão múltipla
+            const deleteList = document.getElementById('deleteCheckboxList');
+            if (deleteList) {
+                deleteList.innerHTML = dados.map(d => {
+                    const quitado = d.parcela_atual > d.total_parcelas;
+                    return `
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="${d.id}" class="delete-checkbox" onchange="atualizarContadorSelecionados()">
+                            <span>${d.nome} - ${d.parcela_atual}/${d.total_parcelas} (Cartão ${d.cartao}) ${quitado ? '[QUITADO]' : ''} - R$ ${d.valor_parcela.toFixed(2)}</span>
+                        </label>
+                    `;
+                }).join('');
+            }
+
+            atualizarContadorSelecionados();
+        }
+
+        function atualizarContadorSelecionados() {
+            const payChecked = document.querySelectorAll('.pay-checkbox:checked').length;
+            const deleteChecked = document.querySelectorAll('.delete-checkbox:checked').length;
+
+            const payBadge = document.getElementById('payCountBadge');
+            const deleteBadge = document.getElementById('deleteCountBadge');
+
+            if (payBadge) {
+                payBadge.textContent = `${payChecked} selecionadas`;
+                payBadge.classList.toggle('show', payChecked > 0);
+            }
+            if (deleteBadge) {
+                deleteBadge.textContent = `${deleteChecked} selecionadas`;
+                deleteBadge.classList.toggle('show', deleteChecked > 0);
+            }
         }
 
         // ============================================
@@ -1392,29 +1515,46 @@
             }
         }
 
-        async function pagarParcela() {
+        async function pagarParcelasMultiplas() {
             const senha = document.getElementById('paySenha').value;
             if (senha !== getSenhaAdmin()) { alert('❌ Senha incorreta!'); return; }
-            const id = parseInt(document.getElementById('payDividaSelect').value);
+
             const data = document.getElementById('payData').value;
-            const divida = todosDados.find(d => d.id === id);
-            if (!divida || divida.parcela_atual > divida.total_parcelas) { alert('❌ Dívida já quitada!'); return; }
             if (!data) { alert('❌ Informe a data!'); return; }
 
-            const pagamentos = typeof divida.pagamentos === 'string' ? JSON.parse(divida.pagamentos) : (divida.pagamentos ||
-                []);
-            pagamentos.push({ data, parcela: divida.parcela_atual, data_registro: new Date().toISOString() });
+            const checkboxes = document.querySelectorAll('.pay-checkbox:checked');
+            if (checkboxes.length === 0) { alert('❌ Selecione pelo menos uma dívida!'); return; }
 
-            showLoading('Registrando...');
-            await atualizarDivida(id, {
-                pagamentos,
-                parcela_atual: divida.parcela_atual + 1,
-                status: divida.parcela_atual + 1 > divida.total_parcelas ? 'quitado' : 'ativo'
-            });
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const dividasSelecionadas = todosDados.filter(d => ids.includes(d.id) && d.parcela_atual <= d.total_parcelas);
+
+            if (dividasSelecionadas.length === 0) { alert('❌ Todas as dívidas selecionadas já estão quitadas!'); return; }
+
+            if (!confirm(
+                    `💰 Confirmar pagamento de ${dividasSelecionadas.length} dívida(s)?\nData: ${formatarData(data)}`))
+                return;
+
+            showLoading(`Pagando ${dividasSelecionadas.length} dívida(s)...`);
+            let sucessos = 0;
+            for (const divida of dividasSelecionadas) {
+                const pagamentos = typeof divida.pagamentos === 'string' ? JSON.parse(divida.pagamentos) : (divida
+                    .pagamentos || []);
+                pagamentos.push({ data, parcela: divida.parcela_atual, data_registro: new Date().toISOString() });
+
+                const result = await atualizarDivida(divida.id, {
+                    pagamentos,
+                    parcela_atual: divida.parcela_atual + 1,
+                    status: divida.parcela_atual + 1 > divida.total_parcelas ? 'quitado' : 'ativo'
+                });
+                if (result.success) sucessos++;
+            }
             hideLoading();
-            alert('✅ Pagamento registrado!');
+
+            alert(`✅ ${sucessos} de ${dividasSelecionadas.length} dívida(s) pagas com sucesso!`);
             document.getElementById('payData').value = '';
             document.getElementById('paySenha').value = '';
+            document.querySelectorAll('.pay-checkbox').forEach(cb => cb.checked = false);
+            atualizarContadorSelecionados();
             atualizarInterface();
         }
 
@@ -1438,17 +1578,32 @@
             atualizarInterface();
         }
 
-        async function excluirDivida() {
-            const senha = document.getElementById('editSenha').value;
+        async function excluirDividasMultiplas() {
+            const senha = document.getElementById('deleteSenha').value;
             if (senha !== getSenhaAdmin()) { alert('❌ Senha incorreta!'); return; }
-            const id = parseInt(document.getElementById('editDividaSelect').value);
-            const divida = todosDados.find(d => d.id === id);
-            if (!confirm(`⚠️ EXCLUIR dívida de ${divida.nome}?`)) return;
-            showLoading('Excluindo...');
-            await deletarDivida(id);
+
+            const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
+            if (checkboxes.length === 0) { alert('❌ Selecione pelo menos uma dívida!'); return; }
+
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const dividasSelecionadas = todosDados.filter(d => ids.includes(d.id));
+
+            if (!confirm(
+                    `⚠️ TEM CERTEZA que deseja EXCLUIR ${dividasSelecionadas.length} dívida(s)?\n\nEsta ação não pode ser desfeita!`
+                    )) return;
+
+            showLoading(`Excluindo ${dividasSelecionadas.length} dívida(s)...`);
+            let sucessos = 0;
+            for (const divida of dividasSelecionadas) {
+                const result = await deletarDivida(divida.id);
+                if (result.success) sucessos++;
+            }
             hideLoading();
-            alert('✅ Dívida excluída!');
-            document.getElementById('editSenha').value = '';
+
+            alert(`✅ ${sucessos} de ${dividasSelecionadas.length} dívida(s) excluídas com sucesso!`);
+            document.getElementById('deleteSenha').value = '';
+            document.querySelectorAll('.delete-checkbox').forEach(cb => cb.checked = false);
+            atualizarContadorSelecionados();
             atualizarInterface();
         }
 
@@ -1594,7 +1749,8 @@
                         'active'));
                     btn.classList.add('active');
                     document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-                    document.getElementById('panel-' + btn.dataset.panel)?.classList.add('active');
+                    const panelId = 'panel-' + btn.dataset.panel;
+                    document.getElementById(panelId)?.classList.add('active');
                 });
             });
 
@@ -1637,9 +1793,9 @@
 
             // Admin ações
             document.getElementById('btnCriarDivida').addEventListener('click', criarDivida);
-            document.getElementById('btnPagar').addEventListener('click', pagarParcela);
+            document.getElementById('btnPagar').addEventListener('click', pagarParcelasMultiplas);
             document.getElementById('btnSalvarEdicao').addEventListener('click', salvarEdicao);
-            document.getElementById('btnExcluirDivida').addEventListener('click', excluirDivida);
+            document.getElementById('btnExcluirDividas').addEventListener('click', excluirDividasMultiplas);
             document.getElementById('btnExportExcel').addEventListener('click', exportarExcel);
             document.getElementById('btnExportJSON').addEventListener('click', exportarJSON);
             document.getElementById('btnImportar').addEventListener('click', () => document.getElementById('importFile')
@@ -1666,8 +1822,8 @@
                 });
             });
 
-            console.log('✅ Sistema Enterprise v3.1 pronto!');
-            console.log('✨ Novidades: Paginação, Cards/Tabela, Filtro de Mês inteligente');
+            console.log('✅ Sistema Enterprise v3.2 pronto!');
+            console.log('✨ Paginação + Cards/Tabela + Filtro Status + Pagamento/Exclusão Múltiplos');
             console.log('💾 Conectado ao Supabase');
         });
     </script>
